@@ -57,11 +57,13 @@ export interface LegalMove {
 export function legalCaptures(card: Card, table: Card[]): LegalMove[] {
   const result: LegalMove[] = [];
   for (const combo of combinations(table)) {
-    const sameRank =
-      combo.items.length === 1 && combo.items[0].rank === card.rank;
-    const sum = combo.items.reduce((s, c) => s + c.rank, 0);
+    // Skip combinations containing undefined table entries
+    if (combo.items.some((c) => !c)) continue;
+    const cards = combo.items as Card[];
+    const sameRank = cards.length === 1 && cards[0].rank === card.rank;
+    const sum = cards.reduce((s, c) => s + c.rank, 0);
     if (sameRank || sum === card.rank) {
-      result.push({ cards: combo.items, indices: combo.indices });
+      result.push({ cards, indices: combo.indices });
     }
   }
   return result;

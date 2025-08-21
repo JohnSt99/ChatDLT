@@ -59,6 +59,17 @@ export default function GamePage({ params }: { params: { id: string } }) {
     setSelected(null);
   };
 
+  const hand: Card[] = playerId ? game?.hands?.[playerId] || [] : [];
+  const table: Card[] = game?.table || [];
+  const turnPlayer = game?.players?.[game?.turn];
+  const isMyTurn = turnPlayer?.id === playerId;
+
+  useEffect(() => {
+    if (!isMyTurn) {
+      setSelected(null);
+    }
+  }, [isMyTurn]);
+
   if (!game) return <div className="p-4">Loading...</div>;
 
   if (!playerId) {
@@ -79,17 +90,6 @@ export default function GamePage({ params }: { params: { id: string } }) {
       </form>
     );
   }
-
-  const hand: Card[] = game.hands[playerId] || [];
-  const table: Card[] = game.table || [];
-  const turnPlayer = game.players[game.turn];
-  const isMyTurn = turnPlayer?.id === playerId;
-
-  useEffect(() => {
-    if (!isMyTurn) {
-      setSelected(null);
-    }
-  }, [isMyTurn]);
 
   return (
     <div className="p-4 space-y-4">
