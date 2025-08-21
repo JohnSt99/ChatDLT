@@ -92,39 +92,44 @@ export default function GamePage({ params }: { params: { id: string } }) {
   }
 
   return (
-    <div className="p-4 space-y-4">
-      <div className="text-xl">Table: {game.name}</div>
-      <div>
-        {isMyTurn ? 'Your turn' : `Waiting for ${turnPlayer?.name}'s turn`}
-      </div>
-      <div className="flex flex-wrap">
-        {table.map((c: Card, i: number) => (
-          <CardView key={i} card={c} variant="table" />
-        ))}
-      </div>
-      <Hand
-        hand={hand}
-        selected={selected ?? undefined}
-        onSelect={setSelected}
-        disabled={!isMyTurn}
-      />
-      {isMyTurn && selected !== null && (
-        <div className="bg-white text-black p-2 rounded">
-          <div className="font-bold">Legal moves</div>
-          {moves.map((m, i) => (
-            <button
-              key={i}
-              onClick={() => play(m.indices)}
-              className="block w-full text-left underline"
-            >
-              Capture {m.cards.map((c) => c.rank).join('+')}
-            </button>
-          ))}
-          <button onClick={() => play()} className="block w-full text-left">
-            Discard
-          </button>
+    <div className="flex flex-col h-screen">
+      <div className="flex-1 p-4 overflow-auto">
+        <div className="text-xl mb-2">Table: {game.name}</div>
+        <div className="mb-2">
+          {isMyTurn ? 'Your turn' : `Waiting for ${turnPlayer?.name}'s turn`}
         </div>
-      )}
+        {game.message && <div className="mb-2">{game.message}</div>}
+        <div className="flex flex-wrap justify-center">
+          {table.map((c: Card, i: number) => (
+            <CardView key={i} card={c} variant="table" />
+          ))}
+        </div>
+      </div>
+      <div className="p-4 border-t">
+        <Hand
+          hand={hand}
+          selected={selected ?? undefined}
+          onSelect={setSelected}
+          disabled={!isMyTurn}
+        />
+        {isMyTurn && selected !== null && (
+          <div className="bg-white text-black p-2 rounded mt-2">
+            <div className="font-bold">Legal moves</div>
+            {moves.map((m, i) => (
+              <button
+                key={i}
+                onClick={() => play(m.indices)}
+                className="block w-full text-left underline"
+              >
+                Capture {m.cards.map((c) => c.rank).join('+')}
+              </button>
+            ))}
+            <button onClick={() => play()} className="block w-full text-left">
+              Discard
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

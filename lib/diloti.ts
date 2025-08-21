@@ -54,16 +54,37 @@ export interface LegalMove {
   indices: number[];
 }
 
+function canPartition(cards: Card[], target: number): boolean {
+  if (cards.length === 0) return false;
+  const helper = (remaining: Card[]): boolean => {
+    if (remaining.length === 0) return true;
+    for (const combo of combinations(remaining)) {
+      const sum = (combo.items as Card[]).reduce((s, c) => s + c.rank, 0);
+      if (sum === target) {
+        const rest = remaining.filter((_, i) => !combo.indices.includes(i));
+        if (helper(rest)) return true;
+      }
+    }
+    return false;
+  };
+  return helper(cards);
+}
+
 export function legalCaptures(card: Card, table: Card[]): LegalMove[] {
   const result: LegalMove[] = [];
+  const isFace = card.rank > 10;
   for (const combo of combinations(table)) {
-    // Skip combinations containing undefined table entries
     if (combo.items.some((c) => !c)) continue;
     const cards = combo.items as Card[];
     const sameRank = cards.length === 1 && cards[0].rank === card.rank;
-    const sum = cards.reduce((s, c) => s + c.rank, 0);
-    if (sameRank || sum === card.rank) {
-      result.push({ cards, indices: combo.indices });
+    if (isFace) {
+      if (sameRank) {
+        result.push({ cards, indices: combo.indices });
+      }
+    } else {
+      if (sameRank || canPartition(cards, card.rank)) {
+        result.push({ cards, indices: combo.indices });
+      }
     }
   }
   return result;
