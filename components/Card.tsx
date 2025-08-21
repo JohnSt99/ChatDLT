@@ -35,19 +35,20 @@ export default function CardView({
     'w-16 h-12 border rounded flex flex-row items-center justify-center m-1 gap-1';
   const variantClass =
     variant === 'hand' ? 'bg-white shadow-md' : 'bg-gray-100';
-  const colorClass = isRed ? 'text-red-600' : 'text-black';
+  const valueStyle = { color: isRed ? '#991b1b' : '#000' };
+  const pipStyle = { color: isRed ? '#dc2626' : '#000' };
   const interactivity = disabled
     ? 'opacity-50 pointer-events-none'
     : 'cursor-pointer';
   return (
     <div
       onClick={!disabled ? onClick : undefined}
-      className={`${base} ${variantClass} ${colorClass} ${
+      className={`${base} ${variantClass} ${
         selected ? 'ring-4 ring-yellow-400' : ''
       } ${interactivity}`}
     >
-      <span>{label}</span>
-      <span>{suitSymbols[card.suit]}</span>
+      <span style={valueStyle}>{label}</span>
+      <span style={pipStyle}>{suitSymbols[card.suit]}</span>
     </div>
   );
 }
