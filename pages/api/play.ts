@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
-import { Card } from "../../lib/diloti";
+import { Card, deal, createDeck, shuffle } from "../../lib/diloti";
 
 export default async function handler(
   req: NextApiRequest,
@@ -35,7 +35,7 @@ export default async function handler(
     return;
   }
   hand.splice(cardIndex, 1);
-  const table: Card[] = game.table;
+  let table: Card[] = game.table;
   if (capture) {
     // capture is array of table indices
     const captured: Card[] = [];
@@ -48,11 +48,39 @@ export default async function handler(
     table.push(card);
   }
   const turn = (game.turn + 1) % game.players.length;
+
+  const allEmpty = game.players.every((p: any) => game.hands[p.id].length === 0);
+  let message: string | null = null;
+  if (allEmpty) {
+    if (game.deck.length >= game.players.length * 6) {
+      for (const p of game.players) {
+        game.hands[p.id] = deal(game.deck, 6);
+      }
+    } else {
+      message = 'Deck exhausted. Starting new game.';
+      let deck = shuffle(createDeck());
+      table = deal(deck, 4);
+      const newHands: Record<string, Card[]> = {};
+      for (const p of game.players) {
+        newHands[p.id] = deal(deck, 6);
+      }
+      game.deck = deck;
+      game.table = table;
+      game.hands = newHands;
+      game.captures = {};
+      for (const p of game.players) {
+        game.captures[p.id] = [];
+      }
+    }
+  }
+
   await updateDoc(gameRef, {
-    hands: { ...game.hands, [playerId]: hand },
+    hands: game.hands,
     table,
     captures: game.captures,
     turn,
+    deck: game.deck,
+    message,
   });
   res.status(200).json({ ok: true });
 }

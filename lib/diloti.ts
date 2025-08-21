@@ -52,18 +52,85 @@ function combinations<T>(arr: T[]): Combo<T>[] {
 export interface LegalMove {
   cards: Card[];
   indices: number[];
+  groups: Card[][];
+}
+
+interface CardWithIndex {
+  card: Card;
+  index: number;
+}
+
+function partitionGroups(cards: CardWithIndex[], target: number): CardWithIndex[][][] {
+  const result: CardWithIndex[][][] = [];
+  const helper = (remaining: CardWithIndex[], current: CardWithIndex[][]) => {
+    if (remaining.length === 0) {
+      if (current.length > 0) result.push(current);
+      return;
+    }
+    for (const combo of combinations(remaining)) {
+      const sum = combo.items.reduce((s, ci) => s + ci.card.rank, 0);
+      if (sum === target) {
+        const rest = remaining.filter((_, i) => !combo.indices.includes(i));
+        helper(rest, [...current, combo.items]);
+      }
+    }
+  };
+  helper(cards, []);
+  return result;
+}
+
+function cardKey(card: Card): string {
+  if (card.rank === 2 && card.suit === 'clubs') return '2c';
+  if (card.rank === 10 && card.suit === 'diamonds') return '10d';
+  return `${card.rank}`;
+}
+
+function keyFromGroups(groups: Card[][]): string {
+  const groupStrings = groups
+    .map((g) => g.map(cardKey).sort().join('+'))
+    .sort();
+  return groupStrings.join('|');
 }
 
 export function legalCaptures(card: Card, table: Card[]): LegalMove[] {
   const result: LegalMove[] = [];
-  for (const combo of combinations(table)) {
-    // Skip combinations containing undefined table entries
-    if (combo.items.some((c) => !c)) continue;
-    const cards = combo.items as Card[];
+  const isFace = card.rank > 10;
+  const seen = new Set<string>();
+  const tableWithIdx = table.map((c, i) => ({ card: c, index: i }));
+  for (const combo of combinations(tableWithIdx)) {
+    const cardsWI = combo.items as CardWithIndex[];
+    const cards = cardsWI.map((ci) => ci.card);
+    const indices = cardsWI.map((ci) => ci.index);
     const sameRank = cards.length === 1 && cards[0].rank === card.rank;
-    const sum = cards.reduce((s, c) => s + c.rank, 0);
-    if (sameRank || sum === card.rank) {
-      result.push({ cards, indices: combo.indices });
+    if (isFace) {
+      if (sameRank) {
+        const groups = [[cards[0]]];
+        const key = keyFromGroups(groups);
+        if (!seen.has(key)) {
+          seen.add(key);
+          result.push({ cards, indices, groups });
+        }
+      }
+    } else {
+      if (sameRank) {
+        const groups = [[cards[0]]];
+        const key = keyFromGroups(groups);
+        if (!seen.has(key)) {
+          seen.add(key);
+          result.push({ cards, indices, groups });
+        }
+      } else {
+        const partitions = partitionGroups(cardsWI, card.rank);
+        for (const part of partitions) {
+          const groups = part.map((g) => g.map((ci) => ci.card));
+          const idxs = part.flat().map((ci) => ci.index);
+          const key = keyFromGroups(groups);
+          if (!seen.has(key)) {
+            seen.add(key);
+            result.push({ cards: groups.flat(), indices: idxs, groups });
+          }
+        }
+      }
     }
   }
   return result;
