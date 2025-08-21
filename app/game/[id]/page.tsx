@@ -25,12 +25,19 @@ const isSpecial = (c: Card) =>
   (c.rank === 2 && c.suit === 'clubs') ||
   (c.rank === 10 && c.suit === 'diamonds');
 
-function cardLabel(c: Card): string {
+function cardNode(c: Card): JSX.Element {
   const base = rankSymbols[c.rank] || c.rank.toString();
+  const isRed = c.suit === 'hearts' || c.suit === 'diamonds';
+  const color = isRed ? 'text-red-600' : 'text-black';
   if (isSpecial(c)) {
-    return base + suitSymbols[c.suit];
+    return (
+      <span className={color}>
+        {base}
+        {suitSymbols[c.suit]}
+      </span>
+    );
   }
-  return base;
+  return <span className={color}>{base}</span>;
 }
 
 export default function GamePage({ params }: { params: { id: string } }) {
@@ -142,19 +149,39 @@ export default function GamePage({ params }: { params: { id: string } }) {
           <div className="bg-white text-black p-2 rounded mt-2">
             <div className="font-bold">Legal moves</div>
             {moves.map((m, i) => {
-              const label = m.groups
-                .map((g) => {
-                  const inner = g.map((c) => cardLabel(c)).join('+');
-                  return g.length > 1 ? `(${inner})` : inner;
-                })
-                .join('+');
+              const handCard = hand[selected];
+              const prefix = handCard.rank <= 10 ? (
+                <span
+                  className={
+                    handCard.suit === 'hearts' || handCard.suit === 'diamonds'
+                      ? 'text-red-600'
+                      : 'text-black'
+                  }
+                >
+                  {rankSymbols[handCard.rank] || handCard.rank}s:{' '}
+                </span>
+              ) : null;
+              const groups = m.groups.map((g, gi) => (
+                <span key={gi}>
+                  {handCard.rank <= 10 && '('}
+                  {g.map((c, ci) => (
+                    <span key={ci}>
+                      {cardNode(c)}
+                      {ci < g.length - 1 && <span>+</span>}
+                    </span>
+                  ))}
+                  {handCard.rank <= 10 && ')'}
+                  {gi < m.groups.length - 1 && <span>+</span>}
+                </span>
+              ));
               return (
                 <button
                   key={i}
                   onClick={() => play(m.indices)}
                   className="block w-full text-left underline"
                 >
-                  Capture {label}
+                  Capture {prefix}
+                  {groups}
                 </button>
               );
             })}
