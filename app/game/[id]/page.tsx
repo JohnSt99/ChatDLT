@@ -96,6 +96,8 @@ export default function GamePage({ params }: { params: { id: string } }) {
   const table: Card[] = game?.table || [];
   const turnPlayer = game?.players?.[game?.turn];
   const isMyTurn = turnPlayer?.id === playerId;
+  const handCard = selected !== null ? hand[selected] : null;
+  const canDiscard = !(handCard && handCard.rank > 10 && table.some((c) => c.rank === handCard.rank));
 
   useEffect(() => {
     if (!isMyTurn) {
@@ -145,11 +147,10 @@ export default function GamePage({ params }: { params: { id: string } }) {
           onSelect={setSelected}
           disabled={!isMyTurn}
         />
-        {isMyTurn && selected !== null && (
+        {isMyTurn && selected !== null && handCard && (
           <div className="bg-white text-black p-2 rounded mt-2">
             <div className="font-bold">Legal moves</div>
             {moves.map((m, i) => {
-              const handCard = hand[selected];
               const multiGroup = m.groups.length > 1;
               const prefix =
                 handCard.rank <= 10 && multiGroup ? (
@@ -190,9 +191,11 @@ export default function GamePage({ params }: { params: { id: string } }) {
                 </button>
               );
             })}
-            <button onClick={() => play()} className="block w-full text-left">
-              Discard
-            </button>
+            {canDiscard && (
+              <button onClick={() => play()} className="block w-full text-left">
+                Discard
+              </button>
+            )}
           </div>
         )}
       </div>
