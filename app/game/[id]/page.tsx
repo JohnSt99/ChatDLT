@@ -28,16 +28,16 @@ const isSpecial = (c: Card) =>
 function cardNode(c: Card): JSX.Element {
   const base = rankSymbols[c.rank] || c.rank.toString();
   const isRed = c.suit === 'hearts' || c.suit === 'diamonds';
-  const color = isRed ? 'text-red-600' : 'text-black';
-  if (isSpecial(c)) {
-    return (
-      <span className={color}>
-        {base}
-        {suitSymbols[c.suit]}
-      </span>
-    );
-  }
-  return <span className={color}>{base}</span>;
+  const valueClass = isRed ? 'text-red-800' : 'text-black';
+  const pipClass = isRed ? 'text-red-600' : 'text-black';
+  return (
+    <span>
+      <span className={valueClass}>{base}</span>
+      {isSpecial(c) && (
+        <span className={pipClass}>{suitSymbols[c.suit]}</span>
+      )}
+    </span>
+  );
 }
 
 export default function GamePage({ params }: { params: { id: string } }) {
@@ -157,7 +157,7 @@ export default function GamePage({ params }: { params: { id: string } }) {
                   <span
                     className={
                       handCard.suit === 'hearts' || handCard.suit === 'diamonds'
-                        ? 'text-red-600'
+                        ? 'text-red-800'
                         : 'text-black'
                     }
                   >
