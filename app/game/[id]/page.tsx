@@ -28,16 +28,16 @@ const isSpecial = (c: Card) =>
 function cardNode(c: Card): JSX.Element {
   const base = rankSymbols[c.rank] || c.rank.toString();
   const isRed = c.suit === 'hearts' || c.suit === 'diamonds';
-  const color = isRed ? 'text-red-600' : 'text-black';
-  if (isSpecial(c)) {
-    return (
-      <span className={color}>
-        {base}
-        {suitSymbols[c.suit]}
-      </span>
-    );
-  }
-  return <span className={color}>{base}</span>;
+  const valueStyle = { color: isRed ? '#991b1b' : '#000' };
+  const pipStyle = { color: isRed ? '#dc2626' : '#000' };
+  return (
+    <span>
+      <span style={valueStyle}>{base}</span>
+      {isSpecial(c) && (
+        <span style={pipStyle}>{suitSymbols[c.suit]}</span>
+      )}
+    </span>
+  );
 }
 
 export default function GamePage({ params }: { params: { id: string } }) {
@@ -154,11 +154,12 @@ export default function GamePage({ params }: { params: { id: string } }) {
               const prefix =
                 handCard.rank <= 10 && multiGroup ? (
                   <span
-                    className={
-                      handCard.suit === 'hearts' || handCard.suit === 'diamonds'
-                        ? 'text-red-600'
-                        : 'text-black'
-                    }
+                    style={{
+                      color:
+                        handCard.suit === 'hearts' || handCard.suit === 'diamonds'
+                          ? '#991b1b'
+                          : '#000',
+                    }}
                   >
                     {rankSymbols[handCard.rank] || handCard.rank}s:{' '}
                   </span>
