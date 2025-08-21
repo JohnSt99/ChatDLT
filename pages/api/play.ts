@@ -34,6 +34,10 @@ export default async function handler(
     res.status(400).json({ error: 'Card not in hand' });
     return;
   }
+  if (!capture && card.rank > 10 && game.table.some((c: Card) => c.rank === card.rank)) {
+    res.status(400).json({ error: 'Must capture matching face card' });
+    return;
+  }
   hand.splice(cardIndex, 1);
   let table: Card[] = game.table;
   if (capture) {
