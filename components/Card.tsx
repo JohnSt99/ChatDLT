@@ -32,7 +32,7 @@ export default function CardView({
   const label = rankSymbols[card.rank] || card.rank.toString();
   const isRed = card.suit === 'hearts' || card.suit === 'diamonds';
   const base =
-    'w-12 h-16 border rounded flex flex-col items-center justify-center m-1';
+    'w-16 h-12 border rounded flex flex-row items-center justify-center m-1 gap-1';
   const variantClass =
     variant === 'hand' ? 'bg-white shadow-md' : 'bg-gray-100';
   const colorClass = isRed ? 'text-red-600' : 'text-black';
