@@ -82,17 +82,33 @@ export default function GamePage({ params }: { params: { id: string } }) {
 
   const hand: Card[] = game.hands[playerId] || [];
   const table: Card[] = game.table || [];
+  const turnPlayer = game.players[game.turn];
+  const isMyTurn = turnPlayer?.id === playerId;
+
+  useEffect(() => {
+    if (!isMyTurn) {
+      setSelected(null);
+    }
+  }, [isMyTurn]);
 
   return (
     <div className="p-4 space-y-4">
       <div className="text-xl">Table: {game.name}</div>
+      <div>
+        {isMyTurn ? 'Your turn' : `Waiting for ${turnPlayer?.name}'s turn`}
+      </div>
       <div className="flex flex-wrap">
         {table.map((c: Card, i: number) => (
-          <CardView key={i} card={c} />
+          <CardView key={i} card={c} variant="table" />
         ))}
       </div>
-      <Hand hand={hand} selected={selected ?? undefined} onSelect={setSelected} />
-      {selected !== null && (
+      <Hand
+        hand={hand}
+        selected={selected ?? undefined}
+        onSelect={setSelected}
+        disabled={!isMyTurn}
+      />
+      {isMyTurn && selected !== null && (
         <div className="bg-white text-black p-2 rounded">
           <div className="font-bold">Legal moves</div>
           {moves.map((m, i) => (

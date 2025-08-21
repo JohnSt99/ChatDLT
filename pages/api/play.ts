@@ -19,6 +19,15 @@ export default async function handler(
     return;
   }
   const game = snap.data() as any;
+  const seat = game.players.findIndex((p: any) => p.id === playerId);
+  if (seat === -1) {
+    res.status(400).json({ error: 'Unknown player' });
+    return;
+  }
+  if (seat !== game.turn) {
+    res.status(400).json({ error: 'Not your turn' });
+    return;
+  }
   const hand: Card[] = game.hands[playerId];
   const cardIndex = hand.findIndex((c) => c.rank === card.rank && c.suit === card.suit);
   if (cardIndex === -1) {

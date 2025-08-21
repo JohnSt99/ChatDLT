@@ -20,21 +20,34 @@ export default function CardView({
   card,
   onClick,
   selected,
+  variant = 'table',
+  disabled,
 }: {
   card: Card;
   onClick?: () => void;
   selected?: boolean;
+  variant?: 'table' | 'hand';
+  disabled?: boolean;
 }) {
   const label = rankSymbols[card.rank] || card.rank.toString();
+  const isRed = card.suit === 'hearts' || card.suit === 'diamonds';
+  const base =
+    'w-12 h-16 border rounded flex flex-col items-center justify-center m-1';
+  const variantClass =
+    variant === 'hand' ? 'bg-white shadow-md' : 'bg-gray-100';
+  const colorClass = isRed ? 'text-red-600' : 'text-black';
+  const interactivity = disabled
+    ? 'opacity-50 pointer-events-none'
+    : 'cursor-pointer';
   return (
     <div
-      onClick={onClick}
-      className={`w-12 h-16 border rounded flex items-center justify-center bg-white text-black m-1 ${
+      onClick={!disabled ? onClick : undefined}
+      className={`${base} ${variantClass} ${colorClass} ${
         selected ? 'ring-4 ring-yellow-400' : ''
-      }`}
+      } ${interactivity}`}
     >
-      {label}
-      {suitSymbols[card.suit]}
+      <span>{label}</span>
+      <span>{suitSymbols[card.suit]}</span>
     </div>
   );
 }
