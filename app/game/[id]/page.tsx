@@ -150,30 +150,35 @@ export default function GamePage({ params }: { params: { id: string } }) {
             <div className="font-bold">Legal moves</div>
             {moves.map((m, i) => {
               const handCard = hand[selected];
-              const prefix = handCard.rank <= 10 ? (
-                <span
-                  className={
-                    handCard.suit === 'hearts' || handCard.suit === 'diamonds'
-                      ? 'text-red-600'
-                      : 'text-black'
-                  }
-                >
-                  {rankSymbols[handCard.rank] || handCard.rank}s:{' '}
-                </span>
-              ) : null;
-              const groups = m.groups.map((g, gi) => (
-                <span key={gi}>
-                  {handCard.rank <= 10 && '('}
-                  {g.map((c, ci) => (
-                    <span key={ci}>
-                      {cardNode(c)}
-                      {ci < g.length - 1 && <span>+</span>}
-                    </span>
-                  ))}
-                  {handCard.rank <= 10 && ')'}
-                  {gi < m.groups.length - 1 && <span>+</span>}
-                </span>
-              ));
+              const multiGroup = m.groups.length > 1;
+              const prefix =
+                handCard.rank <= 10 && multiGroup ? (
+                  <span
+                    className={
+                      handCard.suit === 'hearts' || handCard.suit === 'diamonds'
+                        ? 'text-red-600'
+                        : 'text-black'
+                    }
+                  >
+                    {rankSymbols[handCard.rank] || handCard.rank}s:{' '}
+                  </span>
+                ) : null;
+              const groups = m.groups.map((g, gi) => {
+                const showParens = g.length > 1 || multiGroup;
+                return (
+                  <span key={gi}>
+                    {showParens && '('}
+                    {g.map((c, ci) => (
+                      <span key={ci}>
+                        {cardNode(c)}
+                        {ci < g.length - 1 && <span>+</span>}
+                      </span>
+                    ))}
+                    {showParens && ')'}
+                    {gi < m.groups.length - 1 && <span>+</span>}
+                  </span>
+                );
+              });
               return (
                 <button
                   key={i}
