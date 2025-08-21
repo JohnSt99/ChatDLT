@@ -7,6 +7,39 @@ import { Card, legalCaptures, LegalMove } from '../../../lib/diloti';
 import Hand from '../../../components/Hand';
 import CardView from '../../../components/Card';
 
+const suitSymbols: Record<string, string> = {
+  spades: '♠',
+  hearts: '♥',
+  diamonds: '♦',
+  clubs: '♣',
+};
+
+const rankSymbols: Record<number, string> = {
+  1: 'A',
+  11: 'J',
+  12: 'Q',
+  13: 'K',
+};
+
+const isSpecial = (c: Card) =>
+  (c.rank === 2 && c.suit === 'clubs') ||
+  (c.rank === 10 && c.suit === 'diamonds');
+
+function cardNode(c: Card): JSX.Element {
+  const base = rankSymbols[c.rank] || c.rank.toString();
+  const isRed = c.suit === 'hearts' || c.suit === 'diamonds';
+  const color = isRed ? 'text-red-600' : 'text-black';
+  if (isSpecial(c)) {
+    return (
+      <span className={color}>
+        {base}
+        {suitSymbols[c.suit]}
+      </span>
+    );
+  }
+  return <span className={color}>{base}</span>;
+}
+
 export default function GamePage({ params }: { params: { id: string } }) {
   const { id } = params;
   const sp = useSearchParams();
@@ -92,39 +125,77 @@ export default function GamePage({ params }: { params: { id: string } }) {
   }
 
   return (
-    <div className="p-4 space-y-4">
-      <div className="text-xl">Table: {game.name}</div>
-      <div>
-        {isMyTurn ? 'Your turn' : `Waiting for ${turnPlayer?.name}'s turn`}
-      </div>
-      <div className="flex flex-wrap">
-        {table.map((c: Card, i: number) => (
-          <CardView key={i} card={c} variant="table" />
-        ))}
-      </div>
-      <Hand
-        hand={hand}
-        selected={selected ?? undefined}
-        onSelect={setSelected}
-        disabled={!isMyTurn}
-      />
-      {isMyTurn && selected !== null && (
-        <div className="bg-white text-black p-2 rounded">
-          <div className="font-bold">Legal moves</div>
-          {moves.map((m, i) => (
-            <button
-              key={i}
-              onClick={() => play(m.indices)}
-              className="block w-full text-left underline"
-            >
-              Capture {m.cards.map((c) => c.rank).join('+')}
-            </button>
-          ))}
-          <button onClick={() => play()} className="block w-full text-left">
-            Discard
-          </button>
+    <div className="flex flex-col h-screen">
+      <div className="flex-1 p-4 overflow-auto">
+        <div className="text-xl mb-2">Table: {game.name}</div>
+        <div className="mb-2">
+          {isMyTurn ? 'Your turn' : `Waiting for ${turnPlayer?.name}'s turn`}
         </div>
-      )}
+        {game.message && <div className="mb-2">{game.message}</div>}
+        <div className="flex flex-wrap justify-center">
+          {table.map((c: Card, i: number) => (
+            <CardView key={i} card={c} variant="table" />
+          ))}
+        </div>
+      </div>
+      <div className="p-4 border-t">
+        <Hand
+          hand={hand}
+          selected={selected ?? undefined}
+          onSelect={setSelected}
+          disabled={!isMyTurn}
+        />
+        {isMyTurn && selected !== null && (
+          <div className="bg-white text-black p-2 rounded mt-2">
+            <div className="font-bold">Legal moves</div>
+            {moves.map((m, i) => {
+              const handCard = hand[selected];
+              const multiGroup = m.groups.length > 1;
+              const prefix =
+                handCard.rank <= 10 && multiGroup ? (
+                  <span
+                    className={
+                      handCard.suit === 'hearts' || handCard.suit === 'diamonds'
+                        ? 'text-red-600'
+                        : 'text-black'
+                    }
+                  >
+                    {rankSymbols[handCard.rank] || handCard.rank}s:{' '}
+                  </span>
+                ) : null;
+              const groups = m.groups.map((g, gi) => {
+                const showParens = g.length > 1 || multiGroup;
+                return (
+                  <span key={gi}>
+                    {showParens && '('}
+                    {g.map((c, ci) => (
+                      <span key={ci}>
+                        {cardNode(c)}
+                        {ci < g.length - 1 && <span>+</span>}
+                      </span>
+                    ))}
+                    {showParens && ')'}
+                    {gi < m.groups.length - 1 && <span>+</span>}
+                  </span>
+                );
+              });
+              return (
+                <button
+                  key={i}
+                  onClick={() => play(m.indices)}
+                  className="block w-full text-left underline"
+                >
+                  Capture {prefix}
+                  {groups}
+                </button>
+              );
+            })}
+            <button onClick={() => play()} className="block w-full text-left">
+              Discard
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
