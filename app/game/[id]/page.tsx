@@ -62,8 +62,12 @@ export default function GamePage({ params }: { params: { id: string } }) {
 
   useEffect(() => {
     if (game && playerId && selected !== null) {
-      const card = game.hands[playerId][selected];
-      setMoves(legalCaptures(card, game.table));
+      const card = game.hands?.[playerId]?.[selected];
+      if (card) {
+        setMoves(legalCaptures(card, game.table));
+      } else {
+        setMoves([]);
+      }
     } else {
       setMoves([]);
     }
@@ -83,7 +87,8 @@ export default function GamePage({ params }: { params: { id: string } }) {
 
   const play = async (capture?: number[]) => {
     if (!playerId || selected === null || !game) return;
-    const card: Card = game.hands[playerId][selected];
+    const card = game.hands?.[playerId]?.[selected];
+    if (!card) return;
     await fetch('/api/play', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
