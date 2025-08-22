@@ -130,15 +130,18 @@ export default function GamePage({ params }: { params: { id: string } }) {
     <div className="flex flex-col h-screen">
       <div className="flex-1 p-4 overflow-auto">
         <div className="text-xl mb-2">Table: {game.name}</div>
-        <div className="mb-2">
-          {isMyTurn ? 'Your turn' : `Waiting for ${turnPlayer?.name}'s turn`}
-        </div>
-        {game.message && <div className="mb-2">{game.message}</div>}
-        <div className="flex flex-wrap justify-center">
+        <div className="flex flex-nowrap justify-center gap-2 overflow-x-auto">
           {table.map((c: Card, i: number) => (
             <CardView key={i} card={c} variant="table" />
           ))}
         </div>
+      </div>
+      <div className="p-2 text-center">
+        {game.message
+          ? game.message
+          : isMyTurn
+          ? 'Your turn'
+          : `Waiting for ${turnPlayer?.name}'s turn`}
       </div>
       <div className="p-4 border-t">
         <Hand

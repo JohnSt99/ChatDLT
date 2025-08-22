@@ -14,7 +14,7 @@ export default function Hand({
   disabled?: boolean;
 }) {
   return (
-    <div className="flex">
+    <div className="flex flex-nowrap justify-center gap-2 overflow-x-auto">
       {hand.map((c, i) => (
         <CardView
           key={i}
